@@ -1,0 +1,44 @@
+:root {
+  font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "Noto Sans", "Liberation Sans", sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  min-height: max(884px, 100dvh);
+}
+
+.pressable {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, opacity 140ms ease, background-color 140ms ease, border-color 140ms ease;
+  will-change: transform;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .pressable:active {
+    transform: scale(0.96);
+    filter: brightness(0.95);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pressable:active {
+    transform: scale(0.98);
+  }
+}
+
+.desktop-grid-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}

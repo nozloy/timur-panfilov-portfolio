@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Standard sitemap location
+Sitemap: https://timur.makegood.group/sitemap.xml
+
+# Useful for Yandex and some regional crawlers
+Host: timur.makegood.group
