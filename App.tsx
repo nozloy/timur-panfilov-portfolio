@@ -5,17 +5,47 @@ import Services from './components/Services';
 import Clients from './components/Clients';
 import Footer from './components/Footer';
 import ThemeToggle from './components/ThemeToggle';
+import LanguageToggle from './components/LanguageToggle';
 import GridMotion from './components/GridMotion';
 import DesktopLayout from './components/DesktopLayout';
 import MiniOgPage from './components/MiniOgPage';
+import { Language, siteContent } from './content/siteContent';
+
+const LANGUAGE_STORAGE_KEY = 'preferred-language';
+
+const resolveInitialLanguage = (): Language => {
+  if (typeof window === 'undefined') {
+    return 'ru';
+  }
+
+  const languageFromQuery = new URLSearchParams(window.location.search).get('lang');
+  if (languageFromQuery === 'ru' || languageFromQuery === 'en') {
+    return languageFromQuery;
+  }
+
+  try {
+    const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (savedLanguage === 'ru' || savedLanguage === 'en') {
+      return savedLanguage;
+    }
+  } catch {
+    // Local storage can be blocked in private mode or strict browser settings.
+  }
+
+  return window.navigator.language.toLowerCase().startsWith('ru') ? 'ru' : 'en';
+};
 
 const App: React.FC = () => {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   const isMiniPage = pathname.replace(/\/+$/, '') === '/mini';
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false
-  );
+  const [language, setLanguage] = useState<Language>(() => resolveInitialLanguage());
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return false;
+    }
+    return window.matchMedia('(min-width: 1024px)').matches;
+  });
   const gridItems = useMemo(
     () =>
       Array.from(
@@ -36,16 +66,47 @@ const App: React.FC = () => {
   }, [isDarkMode]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const content = siteContent[language];
+    try {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    } catch {
+      // Ignore storage write errors and keep language in runtime state.
+    }
+    window.document.documentElement.lang = language;
+    window.document.title = content.seo.title;
+
+    const descriptionMeta = window.document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (descriptionMeta) {
+      descriptionMeta.content = content.seo.description;
+    }
+  }, [language]);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') {
+      setIsDesktop(false);
+      return;
+    }
+
     const desktopMediaQuery = window.matchMedia('(min-width: 1024px)');
     const handleViewportChange = () => {
       setIsDesktop(desktopMediaQuery.matches);
     };
 
     handleViewportChange();
-    desktopMediaQuery.addEventListener('change', handleViewportChange);
+    if (typeof desktopMediaQuery.addEventListener === 'function') {
+      desktopMediaQuery.addEventListener('change', handleViewportChange);
+      return () => {
+        desktopMediaQuery.removeEventListener('change', handleViewportChange);
+      };
+    }
 
+    desktopMediaQuery.addListener(handleViewportChange);
     return () => {
-      desktopMediaQuery.removeEventListener('change', handleViewportChange);
+      desktopMediaQuery.removeListener(handleViewportChange);
     };
   }, []);
 
@@ -53,8 +114,19 @@ const App: React.FC = () => {
     setIsDarkMode(!isDarkMode);
   };
 
+  const handleLanguageChange = (nextLanguage: Language) => {
+    setLanguage(nextLanguage);
+  };
+
+  const languageTogglePositionClass = isDesktop
+    ? 'bottom-4 right-20'
+    : 'top-[calc(env(safe-area-inset-top)+0.75rem)] left-4';
+  const themeTogglePositionClass = isDesktop
+    ? 'bottom-4 right-4'
+    : 'top-[calc(env(safe-area-inset-top)+0.75rem)] right-4';
+
   if (isMiniPage) {
-    return <MiniOgPage />;
+    return <MiniOgPage language={language} />;
   }
 
   return (
@@ -72,20 +144,33 @@ const App: React.FC = () => {
       />
 
       {isDesktop ? (
-        <DesktopLayout />
+        <DesktopLayout language={language} />
       ) : (
         <div className="max-w-md mx-auto min-h-screen shadow-2xl overflow-hidden bg-card-light dark:bg-card-dark relative z-10">
-          <Header />
+          <Header language={language} />
           <div className="flex flex-col">
-            <Experience />
-            <Services />
+            <Experience language={language} />
+            <Services language={language} />
           </div>
-          <Clients />
-          <Footer />
+          <Clients language={language} />
+          <Footer language={language} />
         </div>
       )}
 
-      <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+      <LanguageToggle
+        language={language}
+        onChange={handleLanguageChange}
+        ariaLabel={siteContent[language].ui.languageToggleAria}
+        switchToRussianAria={siteContent[language].ui.switchToRussianAria}
+        switchToEnglishAria={siteContent[language].ui.switchToEnglishAria}
+        positionClassName={languageTogglePositionClass}
+      />
+      <ThemeToggle
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleTheme}
+        ariaLabel={siteContent[language].ui.themeToggleAria}
+        positionClassName={themeTogglePositionClass}
+      />
     </div>
   );
 };
