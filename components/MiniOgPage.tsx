@@ -16,8 +16,8 @@ const MiniOgPage: React.FC<MiniOgPageProps> = ({ language }) => {
           <div className="relative overflow-hidden border-r border-white/10">
             <img
               alt={content.hero.portraitAlt}
-              src="/images/photo.jpeg"
-              className="w-full h-full object-cover object-top grayscale contrast-125 brightness-90"
+              src="/images/light.webp"
+              className="w-full h-full object-cover object-top"
               decoding="async"
               loading="eager"
             />

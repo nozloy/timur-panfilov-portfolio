@@ -10,7 +10,7 @@ const Header: React.FC<HeaderProps> = ({ language }) => {
 
 	useEffect(() => {
 		const darkImage = new Image()
-		darkImage.src = '/images/dark.png'
+		darkImage.src = '/images/dark.webp'
 	}, [])
 
 	return (
@@ -18,18 +18,18 @@ const Header: React.FC<HeaderProps> = ({ language }) => {
 			<div className='h-[500px] w-full overflow-hidden relative group'>
 				<img
 					alt={content.hero.portraitAlt}
-					className='absolute inset-0 w-full h-full object-cover object-top filter grayscale contrast-110 brightness-90 group-hover:grayscale-0 transition-all duration-700 opacity-100 dark:opacity-0'
+					className='absolute inset-0 w-full h-full object-cover object-top transform-gpu scale-[1.04] transition-[opacity,transform] duration-700 opacity-100 dark:opacity-0'
 					decoding='async'
 					loading='eager'
-					src='/images/photo.jpeg'
+					src='/images/light.webp'
 				/>
 				<img
 					alt=''
 					aria-hidden='true'
-					className='absolute inset-0 w-full h-full object-cover object-top filter grayscale contrast-110 brightness-90 group-hover:grayscale-0 transition-all duration-700 opacity-0 dark:opacity-100'
+					className='absolute inset-0 w-full h-full object-cover object-top transform-gpu scale-100 transition-[opacity,transform] duration-700 opacity-0 dark:opacity-100'
 					decoding='async'
 					loading='eager'
-					src='/images/dark.png'
+					src='/images/dark.webp'
 				/>
 				<div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent'></div>
 				<div className='absolute bottom-0 left-0 w-full p-6 text-white z-10'>

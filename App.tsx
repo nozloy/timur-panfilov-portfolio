@@ -32,7 +32,7 @@ const resolveInitialLanguage = (): Language => {
     // Local storage can be blocked in private mode or strict browser settings.
   }
 
-  return window.navigator.language.toLowerCase().startsWith('ru') ? 'ru' : 'en';
+  return 'ru';
 };
 
 const App: React.FC = () => {
