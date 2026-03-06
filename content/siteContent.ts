@@ -17,7 +17,6 @@ type MobileContent = {
   services: ServiceItem[];
   clientsTitle: string;
   clients: ClientItem[];
-  presentationCta: string;
   contactsTitle: string;
 };
 
@@ -28,7 +27,6 @@ type DesktopContent = {
   services: ServiceItem[];
   clientsTitle: string;
   clients: string[];
-  presentationLinkText: string;
   contactsTitle: string;
 };
 
@@ -128,7 +126,6 @@ export const siteContent: Record<Language, SiteLanguageContent> = {
         { name: 'HH.ru' },
         { name: 'T1' }
       ],
-      presentationCta: 'Презентация',
       contactsTitle: 'Контакты'
     },
     desktop: {
@@ -160,7 +157,6 @@ export const siteContent: Record<Language, SiteLanguageContent> = {
       ],
       clientsTitle: 'Клиенты',
       clients: ['Яндекс Еда', 'Яндекс Маркет', 'Яндекс Cloud', 'ОТП Банк', 'Т-Банк', 'Газпромбанк', 'HH.ru', 'Т1'],
-      presentationLinkText: 'Ссылка на презентацию',
       contactsTitle: 'Контакты'
     },
     mini: {
@@ -229,7 +225,6 @@ export const siteContent: Record<Language, SiteLanguageContent> = {
         { name: 'HH.ru' },
         { name: 'T1' }
       ],
-      presentationCta: 'Presentation',
       contactsTitle: 'Contacts'
     },
     desktop: {
@@ -261,7 +256,6 @@ export const siteContent: Record<Language, SiteLanguageContent> = {
       ],
       clientsTitle: 'Clients',
       clients: ['Yandex Food', 'Yandex Market', 'Yandex Cloud', 'OTP Bank', 'T-Bank', 'Gazprombank', 'HH.ru', 'T1'],
-      presentationLinkText: 'Link to presentation',
       contactsTitle: 'Contacts'
     },
     mini: {

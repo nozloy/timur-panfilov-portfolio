@@ -1,86 +1,123 @@
 # Тимур Панфилов — Portfolio
 
-Официальный сайт-портфолио Тимура Панфилова: застройка и декор мероприятий, тендерные сметы, шеф-монтаж и проекты ЭКСПО.
+Портфолио и админ-панель для управления каруселью изображений.
 
-## Домен
+## Стек
 
-- Production: `https://timur.makegood.group/`
+- Next.js (App Router)
+- TypeScript
+- TailwindCSS (локальная сборка)
+- Prisma ORM + PostgreSQL
+- BetterAuth + Yandex OAuth
+- S3-compatible storage (presigned upload)
+- shadcn/ui (Carousel + admin UI)
 
-## О проекте
+## Основные фичи
 
-Сайт содержит:
+- Публичная главная страница и `/mini`
+- Карусель `Home` перед секцией клиентов (mobile + desktop)
+- Админка `/admin/carousel` с загрузкой, редактированием, публикацией, удалением и reorder
+- Авторизация через Yandex OAuth, доступ только email из таблицы `Admin`
 
-- Портфолио и позиционирование специалиста
-- Описание услуг
-- Опыт и форматы проектов
-- Список клиентов
-- Контактные данные
-- Адаптивную верстку (отдельные мобильная и десктопная версии)
-- Переключатель светлой/тёмной темы
-- Десктопный анимированный фон (`Grid Motion` на GSAP)
-
-## Услуги
-
-- Тендерные сметы
-- Застройка под ключ
-- Шеф монтаж / демонтаж
-- Проекты ЭКСПО
-
-## Контакты
-
-- Телефон: `+7 999 164 99 19`
-- Telegram: `@timur_panfilovich`
-- Email: `panfilov.timur@gmail.com`
-
-## Технологии
-
-- `React 19`
-- `TypeScript`
-- `Vite`
-- `TailwindCSS` (через CDN в `index.html`)
-- `GSAP` (для `Grid Motion`)
-
-## Запуск локально
+## Локальный запуск
 
 Требования:
 
-- `Node.js 18+`
-- `npm`
+- Node.js 20+
+- PostgreSQL
 
-Команды:
+Подготовка:
 
 ```bash
 npm install
+cp .env.example .env.local
+```
+
+Обязательные переменные в `.env.local`:
+
+- `DATABASE_URL`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `YANDEX_CLIENT_ID`
+- `YANDEX_CLIENT_SECRET`
+- `CAROUSEL_S3_BUCKET`
+- `CAROUSEL_S3_REGION`
+- `CAROUSEL_S3_ACCESS_KEY_ID`
+- `CAROUSEL_S3_SECRET_ACCESS_KEY`
+
+Опционально:
+
+- `CAROUSEL_S3_ENDPOINT` (для S3-compatible провайдеров)
+- `CAROUSEL_S3_FORCE_PATH_STYLE`
+- `CAROUSEL_CDN_URL` (если укажете только `https://s3.twcstorage.ru`, bucket будет добавлен автоматически)
+
+Миграции и генерация клиента:
+
+```bash
+npm run prisma:migrate:dev
+npm run prisma:generate
+```
+
+Выдать доступ администратору:
+
+```bash
+npm run grant-admin -- admin@example.com
+```
+
+Запуск dev:
+
+```bash
 npm run dev
 ```
 
-По умолчанию dev-сервер работает на `http://localhost:3000`.
+## Скрипты
 
-## Сборка
+- `npm run dev` — Next dev server (`:3000`)
+- `npm run build` — `prisma generate` + `next build`
+- `npm run start` — production server
+- `npm run prisma:migrate:dev` — применить миграции в dev
+- `npm run prisma:migrate:deploy` — применить миграции в production
+- `npm run prisma:studio` — Prisma Studio
+- `npm run grant-admin -- <email>` — добавить email в таблицу `Admin`
+
+## OAuth callback
+
+Для Yandex OAuth укажите callback URL:
+
+`<BETTER_AUTH_URL>/api/auth/callback/yandex`
+
+Пример для локальной разработки:
+
+`http://localhost:3000/api/auth/callback/yandex`
+
+## S3 CORS for admin upload
+
+Для загрузки через presigned `PUT` в браузере у bucket обязательно должен быть CORS.
+
+Быстрая настройка:
 
 ```bash
-npm run build
-npm run preview
+npm run s3:cors:apply -- https://your-domain.com http://localhost:3000
 ```
 
-## SEO / Social / AI discoverability
+Если аргументы не переданы, скрипт использует `BETTER_AUTH_URL` (или `NEXT_PUBLIC_APP_URL`) + `http://localhost:3000`.
 
-В проект добавлены:
+Минимально нужно разрешить:
 
-- расширенные meta-теги и Open Graph / Twitter Card в `index.html`
-- JSON-LD schema (`Person`, `ProfessionalService`, `WebSite`) в `index.html`
-- `public/robots.txt`
-- `public/sitemap.xml`
-- `public/site.webmanifest`
-- `public/llms.txt`
-- `public/llms-full.txt`
-- `public/.well-known/llms.txt`
-- `public/og-image.png` для предпросмотра ссылок в мессенджерах
+- `AllowedOrigins`: ваш домен админки
+- `AllowedMethods`: `PUT`
+- `AllowedHeaders`: `Content-Type` (или `*`)
 
-## Структура (ключевые файлы)
+## Docker
 
-- `App.tsx` — роутинг между мобильной и десктопной версией
-- `components/DesktopLayout.tsx` — основная десктопная верстка
-- `components/GridMotion.tsx` — анимированный фон
-- `components/Header.tsx` — мобильный hero-блок
-- `index.html` — meta/SEO/OG/JSON-LD
+В проекте есть `Dockerfile` с `standalone`-сборкой Next.js и обязательным mirror-ARG для base image:
+
+- `ARG NODE_IMAGE=mirror.gcr.io/library/node:20-bookworm-slim`
+- все `FROM` используют только `${NODE_IMAGE}`
+
+Сборка:
+
+```bash
+docker build -t timur-portfolio .
+```

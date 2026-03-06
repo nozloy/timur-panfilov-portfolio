@@ -1,17 +1,24 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import Header from './components/Header'
-import Experience from './components/Experience'
-import Services from './components/Services'
-import Clients from './components/Clients'
-import Footer from './components/Footer'
-import ThemeToggle from './components/ThemeToggle'
-import LanguageToggle from './components/LanguageToggle'
-import GridMotion from './components/GridMotion'
-import DesktopLayout from './components/DesktopLayout'
-import MiniOgPage from './components/MiniOgPage'
-import { Language, siteContent } from './content/siteContent'
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { Language, siteContent } from '@/content/siteContent'
+import Clients from '@/modules/home/ui/clients'
+import DesktopLayout from '@/modules/home/ui/desktop-layout'
+import Experience from '@/modules/home/ui/experience'
+import Footer from '@/modules/home/ui/footer'
+import GridMotion from '@/modules/home/ui/grid-motion'
+import Header from '@/modules/home/ui/header'
+import LanguageToggle from '@/modules/home/ui/language-toggle'
+import Services from '@/modules/home/ui/services'
+import ThemeToggle from '@/modules/home/ui/theme-toggle'
+import HomeCarousel from '@/modules/carousel/ui/home-carousel'
+import type { CarouselSlide } from '@/modules/carousel/types'
 
 const LANGUAGE_STORAGE_KEY = 'preferred-language'
+
+type HomeShellProps = {
+	initialSlides: CarouselSlide[]
+}
 
 const resolveInitialLanguage = (): Language => {
 	if (typeof window === 'undefined') {
@@ -31,16 +38,13 @@ const resolveInitialLanguage = (): Language => {
 			return savedLanguage
 		}
 	} catch {
-		// Local storage can be blocked in private mode or strict browser settings.
+		// Ignore storage read errors in strict browser modes.
 	}
 
 	return 'ru'
 }
 
-const App: React.FC = () => {
-	const pathname =
-		typeof window !== 'undefined' ? window.location.pathname : '/'
-	const isMiniPage = pathname.replace(/\/+$/, '') === '/mini'
+export default function HomeShell({ initialSlides }: HomeShellProps) {
 	const [isDarkMode, setIsDarkMode] = useState(false)
 	const [language, setLanguage] = useState<Language>(() =>
 		resolveInitialLanguage(),
@@ -52,14 +56,16 @@ const App: React.FC = () => {
 		) {
 			return false
 		}
+
 		return window.matchMedia('(min-width: 1024px)').matches
 	})
+
 	const gridItems = useMemo(
 		() =>
 			Array.from(
 				{ length: 28 },
 				() =>
-					'https://images.unsplash.com/photo-1742415106102-77bbfe14b872?q=80&w=2722&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+					'https://images.unsplash.com/photo-1748370987492-eb390a61dcda?q=80&w=3464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 			),
 		[],
 	)
@@ -82,13 +88,14 @@ const App: React.FC = () => {
 		try {
 			window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
 		} catch {
-			// Ignore storage write errors and keep language in runtime state.
+			// Ignore storage write errors.
 		}
+
 		window.document.documentElement.lang = language
 		window.document.title = content.seo.title
 
 		const descriptionMeta = window.document.querySelector<HTMLMetaElement>(
-			'meta[name="description"]',
+			"meta[name='description']",
 		)
 		if (descriptionMeta) {
 			descriptionMeta.content = content.seo.description
@@ -120,24 +127,12 @@ const App: React.FC = () => {
 		}
 	}, [])
 
-	const toggleTheme = () => {
-		setIsDarkMode(!isDarkMode)
-	}
-
-	const handleLanguageChange = (nextLanguage: Language) => {
-		setLanguage(nextLanguage)
-	}
-
 	const languageTogglePositionClass = isDesktop
 		? 'bottom-4 right-20'
-		: 'top-[calc(env(safe-area-inset-top)+0.75rem)] left-4'
+		: 'left-4 top-[calc(env(safe-area-inset-top)+0.75rem)]'
 	const themeTogglePositionClass = isDesktop
 		? 'bottom-4 right-4'
-		: 'top-[calc(env(safe-area-inset-top)+0.75rem)] right-4'
-
-	if (isMiniPage) {
-		return <MiniOgPage language={language} />
-	}
+		: 'right-4 top-[calc(env(safe-area-inset-top)+0.75rem)]'
 
 	return (
 		<div className='relative min-h-screen'>
@@ -147,20 +142,21 @@ const App: React.FC = () => {
 				</div>
 			) : null}
 			<div
-				className={`fixed inset-0 pointer-events-none z-[5] transition-opacity duration-500 ${
-					isDarkMode ? 'opacity-100 bg-black/45' : 'opacity-0 bg-black/0'
+				className={`pointer-events-none fixed inset-0 z-[5] transition-opacity duration-500 ${
+					isDarkMode ? 'bg-black/45 opacity-100' : 'bg-black/0 opacity-0'
 				}`}
 				aria-hidden='true'
 			/>
 
 			{isDesktop ? (
-				<DesktopLayout language={language} />
+				<DesktopLayout language={language} slides={initialSlides} />
 			) : (
-				<div className='max-w-md mx-auto min-h-screen shadow-2xl overflow-hidden bg-card-light dark:bg-card-dark relative z-10'>
+				<div className='relative z-10 mx-auto min-h-screen max-w-md overflow-hidden bg-card-light shadow-2xl dark:bg-card-dark'>
 					<Header language={language} />
 					<div className='flex flex-col'>
 						<Experience language={language} />
 						<Services language={language} />
+						<HomeCarousel slides={initialSlides} language={language} />
 					</div>
 					<Clients language={language} />
 					<Footer language={language} />
@@ -169,7 +165,7 @@ const App: React.FC = () => {
 
 			<LanguageToggle
 				language={language}
-				onChange={handleLanguageChange}
+				onChange={setLanguage}
 				ariaLabel={siteContent[language].ui.languageToggleAria}
 				switchToRussianAria={siteContent[language].ui.switchToRussianAria}
 				switchToEnglishAria={siteContent[language].ui.switchToEnglishAria}
@@ -177,12 +173,10 @@ const App: React.FC = () => {
 			/>
 			<ThemeToggle
 				isDarkMode={isDarkMode}
-				toggleTheme={toggleTheme}
+				toggleTheme={() => setIsDarkMode(prev => !prev)}
 				ariaLabel={siteContent[language].ui.themeToggleAria}
 				positionClassName={themeTogglePositionClass}
 			/>
 		</div>
 	)
 }
-
-export default App
