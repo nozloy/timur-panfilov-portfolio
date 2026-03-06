@@ -121,3 +121,15 @@ npm run s3:cors:apply -- https://your-domain.com http://localhost:3000
 ```bash
 docker build -t timur-portfolio .
 ```
+
+Запуск:
+
+```bash
+docker run --rm -p 3000:3000 --env-file .env timur-portfolio
+```
+
+Если используете reverse-proxy/Coolify:
+
+- Внутренний порт контейнера: `3000`
+- Healthcheck path: `/api/health`
+- Если платформа задаёт `PORT`, значение должно совпадать с портом приложения (рекомендуется `3000`)

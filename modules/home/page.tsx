@@ -2,7 +2,14 @@ import { carouselService } from "@/modules/carousel/service";
 import HomeShell from "@/modules/home/ui/home-shell";
 
 export default async function HomePage() {
-  const slides = await carouselService.getPublishedSlides();
+  let slides = [] as Awaited<ReturnType<typeof carouselService.getPublishedSlides>>;
+
+  try {
+    slides = await carouselService.getPublishedSlides();
+  } catch (error) {
+    // Keep homepage available even if DB is temporarily unavailable.
+    console.error("Failed to load carousel slides on homepage:", error);
+  }
 
   const serializableSlides = slides.map((slide) => ({
     ...slide,
